@@ -1,2 +1,3 @@
 # Word_generator
 Simple word generator basen on n-gramm model and word2vec
+There is a class TextGen, it has two methods fit and generate, fit takes folder with text files and create file with word2vec model and with dictionary, generate takes model and dictionary and creates text of the specified length. train.py has two arguments --inputdir and --model that have default values, generate.py has 3 arguments --prefix, --model and --length that also have default values. Default length is 20 word, default prefix is empty string.

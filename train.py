@@ -12,25 +12,53 @@ from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
+#function make pairs of words which meet together in the text
 def make_pairs(corpus):
     for i in range(len(corpus) - 1):
         yield (corpus[i], corpus[i + 1])
 
 
+#function that saves our dictionary in pickle file
 def save_obj(obj, name):
     with open(name, 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
+#function load pickle object
 def load_obj(name):
     with open(name, 'rb') as f:
         return pickle.load(f)
+
 
 class TextGen:
     def __init__(self) -> None:
         pass
 
 
+    #method takes word2vec file, dictionary.pkl file, prefix(to start generating text), and length of text to generate
+    def generate(self, model_filename, length, prefix, dictionary_filename):
+        word_dict = load_obj(dictionary_filename)
+        model = Word2Vec.load(model_filename)
+        chain = [prefix] 
+        word = prefix.split()[-1] if prefix != "" else ""
+        for i in range(int(length)):
+            if word in word_dict.keys():
+                weights_array = list()
+                for word_candidate in set(word_dict[word]):
+                    weights_array.append((word_candidate, len(word_candidate) * model.wv.similarity(word_candidate, word)))
+                weights_array = sorted(weights_array, key=lambda weight: weight[1])
+                if len(weights_array) > 20:
+                    word = random.choice(weights_array[-20:-1])[0]
+                else:
+                    word = random.choice(weights_array)[0]
+            else:
+                word = random.choice(list(word_dict))
+            chain.append(str(word))
+        s = ' '.join(chain)
+        print(s[1:])
+
+
+    #method takes name for saving word2vec model file, name for saving dictionary.pkl file, and path to directory with text files for learning
     def fit(self, data_folder, model_filename, dictionary_filename):
         file_lst = os.listdir(data_folder)
         corpus = ""
@@ -62,27 +90,6 @@ class TextGen:
         model = Word2Vec(lst, min_count = 1)
         model.save(model_filename)
 
-
-    def generate(self, model_filename, length, prefix, dictionary_filename):
-        word_dict = load_obj(dictionary_filename)
-        model = Word2Vec.load(model_filename)
-        chain = [prefix] 
-        word = prefix.split()[-1] if prefix != "" else ""
-        for i in range(int(length)):
-            if word in word_dict.keys():
-                weights_array = list()
-                for word_candidate in set(word_dict[word]):
-                    weights_array.append((word_candidate, len(word_candidate) * model.wv.similarity(word_candidate, word)))
-                weights_array = sorted(weights_array, key=lambda weight: weight[1])
-                if len(weights_array) > 20:
-                    word = random.choice(weights_array[-20:-1])[0]
-                else:
-                    word = random.choice(weights_array)[0]
-            else:
-                word = random.choice(list(word_dict))
-            chain.append(str(word))
-        s = ' '.join(chain)
-        print(s[1:])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
