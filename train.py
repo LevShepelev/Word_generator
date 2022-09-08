@@ -65,12 +65,10 @@ class TextGen:
         for file_name in file_lst:
             text = open(os.path.join(data_folder, file_name), encoding = "utf-8").read().lower()
             str_punct = string.punctuation
-            str_punct += '—' + '»' + '«'
+            str_punct += '—' + '»' + '«' + '“'
             str_punct = str_punct.replace('-', '')
             for p in str_punct:
                 if p in text:
-                    text = text.replace(p, '')
-                if '“' in text:
                     text = text.replace(p, '')
             corpus += text
 
